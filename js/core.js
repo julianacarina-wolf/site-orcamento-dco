@@ -1,0 +1,27 @@
+window.App = window.App || {};
+App.brl = new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'});
+App.$ = s => document.querySelector(s);
+App.norm = (v='') => String(v).normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^A-Z0-9]/gi,'').toUpperCase();
+App.option = (v,t) => `<option value="${String(v).replaceAll('"','&quot;')}">${t}</option>`;
+App.tableKeys=['implantacao','link','internet','ti','tiAnual'];
+
+App.rebuildDataIndexes=function(){
+  const store=window.AppData||{};
+  App.D=store.data||window.APP_DATA||{clientes:[],servicos:[],regioes:[],config:{}};
+  App.P=store.pricing||window.LINK_DATA_PRICING||{reajustes:{},faixasDesconto:[],linkDados:[]};
+  App.D.clientes=Array.isArray(App.D.clientes)?App.D.clientes:[];
+  App.D.servicos=Array.isArray(App.D.servicos)?App.D.servicos:[];
+  App.D.regioes=Array.isArray(App.D.regioes)?App.D.regioes:[];
+  App.D.contatos=Array.isArray(App.D.contatos)?App.D.contatos:[];
+  App.P.linkDados=Array.isArray(App.P.linkDados)?App.P.linkDados:[];
+  App.P.faixasDesconto=Array.isArray(App.P.faixasDesconto)?App.P.faixasDesconto:[];
+  App.municipalities=[...new Set(App.D.regioes.map(r=>r.municipio).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'pt-BR'));
+  App.muniOptions='<option value="">Município...</option>'+App.municipalities.map(m=>App.option(m,m)).join('');
+  App.allTiServices=App.D.servicos.map((s,i)=>({s,i})).filter(({s})=>{const d=App.norm(s.descricao);return d!=='LINKDEDADOS'&&d!=='INTERNET'&&!d.startsWith('IMPLANTACAODEINFRAESTRUTURA');});
+  App.isAnnualService=s=>App.norm(s.faturamento).includes('PAGAMENTOUNICOANUAL');
+  App.tiServices=App.allTiServices.filter(({s})=>!App.isAnnualService(s));
+  App.tiAnnualServices=App.allTiServices.filter(({s})=>App.isAnnualService(s));
+  App.tiOptions='<option value="">Serviço...</option>'+App.tiServices.map(({s,i})=>App.option(i,`${s.descricao}${s.tipo?' — '+s.tipo:''}`)).join('');
+  App.tiAnnualOptions='<option value="">Serviço anual...</option>'+App.tiAnnualServices.map(({s,i})=>App.option(i,`${s.descricao}${s.tipo?' — '+s.tipo:''}`)).join('');
+};
+App.rebuildDataIndexes();
