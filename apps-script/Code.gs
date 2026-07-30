@@ -7,14 +7,12 @@
  *   Quem pode acessar: qualquer pessoa
  */
 const SPREADSHEET_ID = '1YI33i6smpFUGMWxKos4th-IjHSIVigT28Xotsz9zJpg';
-const CACHE_SECONDS = 300;
 
 function doGet(e) {
   try {
     validateApiKey_(e);
-    const action = String((e && e.parameter && e.parameter.action) || 'bundle').toLowerCase();
+    const action = String((e && e.parameter && e.parameter.action) || 'status').toLowerCase();
     const handlers = {
-      bundle: getBundle_,
       status: getStatus_,
       clientes: getClientes_,
       contatos: getContatos_,
@@ -27,40 +25,10 @@ function doGet(e) {
       historico_reajuste: getHistoricoReajuste_
     };
     if (!handlers[action]) throw new Error('Ação inválida: ' + action);
-    return json_({ success: true, ...handlers[action](e) });
+    return output_(e, { success: true, ...handlers[action](e) });
   } catch (error) {
-    return json_({ success: false, error: error.message || String(error) });
+    return output_(e, { success: false, error: error.message || String(error) });
   }
-}
-
-function getBundle_(e) {
-  const cache = CacheService.getScriptCache();
-  const forceRefresh = String((e && e.parameter && e.parameter.refresh) || '') === '1';
-  const cached = forceRefresh ? null : cache.get('bundle-v2');
-  if (cached) return JSON.parse(cached);
-
-  const config = getConfiguracoes_();
-  const payload = {
-    version: config.system.version,
-    updatedAt: Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'dd/MM/yyyy HH:mm'),
-    data: {
-      clientes: getClientes_().data,
-      contatos: getContatos_().data,
-      municipios: getMunicipios_().data,
-      servicos: getServicos_().data,
-      regioes: getRegioes_().data,
-      config: config.data,
-      implantacao: getImplantacao_().data
-    },
-    pricing: {
-      reajustes: config.reajustes,
-      historicoReajuste: getHistoricoReajuste_().data,
-      faixasDesconto: config.faixasDesconto,
-      linkDados: getLinkDados_().data
-    }
-  };
-  cache.put('bundle-v2', JSON.stringify(payload), CACHE_SECONDS);
-  return payload;
 }
 
 function getStatus_() {
@@ -231,6 +199,13 @@ function objectFromRow_(headers, row) {
   headers.forEach((header, index) => { if (header) object[header] = text_(row[index]); });
   return object;
 }
-function json_(payload) {
+function output_(e, payload) {
+  const callback = String((e && e.parameter && e.parameter.callback) || '');
+  if (callback && /^[A-Za-z_$][0-9A-Za-z_$\.]*$/.test(callback)) {
+    return ContentService
+      .createTextOutput(callback + '(' + JSON.stringify(payload) + ');')
+      .setMimeType(ContentService.MimeType.JAVASCRIPT);
+  }
   return ContentService.createTextOutput(JSON.stringify(payload)).setMimeType(ContentService.MimeType.JSON);
 }
+

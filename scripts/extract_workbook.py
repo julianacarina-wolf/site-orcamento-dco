@@ -138,13 +138,20 @@ def build(workbook_path: Path, output_dir: Path) -> None:
 
     output_dir.mkdir(parents=True, exist_ok=True)
     (output_dir / "dados").mkdir(parents=True, exist_ok=True)
-    write_js(output_dir / "dados" / "data.js", "window.APP_DATA", {
+    payload_data = {
         "clientes": clientes, "servicos": servicos, "regioes": regioes, "config": config,
-    })
-    write_js(output_dir / "dados" / "pricing.js", "window.LINK_DATA_PRICING", {
+    }
+    payload_pricing = {
         "reajustes": reajustes, "faixasDesconto": faixas, "linkDados": link_dados,
-    })
-    print(f"Gerados data.js e pricing.js a partir de {workbook_path}")
+    }
+    bootstrap = (
+        "window.APP_DATA=" + json.dumps(payload_data, ensure_ascii=False, separators=(",", ":")) + ";\n"
+        "window.LINK_DATA_PRICING=" + json.dumps(payload_pricing, ensure_ascii=False, separators=(",", ":")) + ";\n"
+        "window.APP_BOOTSTRAP={version:'1.1.2',generatedAt:'',data:window.APP_DATA,pricing:window.LINK_DATA_PRICING};\n"
+        "window.AppData={source:'static',updatedAt:'',version:window.APP_BOOTSTRAP.version,data:window.APP_DATA,pricing:window.LINK_DATA_PRICING};\n"
+    )
+    (output_dir / "dados" / "bootstrap.js").write_text(bootstrap, encoding="utf-8")
+    print(f"Gerado bootstrap.js a partir de {workbook_path}")
     print(f"Clientes: {len(clientes)} | Serviços: {len(servicos)} | Municípios: {len(regioes)} | Preços: {len(link_dados)}")
 
 

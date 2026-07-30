@@ -4,7 +4,7 @@
 
 Google Sheets → Google Apps Script → JSON → navegador → cache local.
 
-A planilha é a fonte principal. Os arquivos `dados/data.js` e `dados/pricing.js` continuam no projeto como contingência para a primeira abertura sem internet.
+A planilha é a fonte principal. O arquivo `dados/bootstrap.js` concentra a base local usada na inicialização e como contingência para a primeira abertura sem internet.
 
 ## Dados sincronizados
 
@@ -49,7 +49,7 @@ Abra no navegador:
 
 - `URL_DO_APPS_SCRIPT?action=status`
 - `URL_DO_APPS_SCRIPT?action=clientes`
-- `URL_DO_APPS_SCRIPT?action=bundle`
+- `URL_DO_APPS_SCRIPT?action=status`
 
 A resposta deve começar com `{"success":true`.
 
@@ -59,3 +59,18 @@ A resposta deve começar com `{"success":true`.
 - o botão **Atualizar planilha** força nova leitura e ignora o cache do navegador e o cache temporário do Apps Script;
 - se a API falhar, o sistema usa o último cache salvo;
 - se ainda não existir cache, usa os arquivos estáticos do projeto.
+
+
+## Correção do limite do CacheService
+
+A versão 1.1.1 não grava mais um pacote completo no `CacheService` do Apps Script. O navegador consulta endpoints menores e mantém o cache no `localStorage`. Isso elimina o erro `Argumento grande demais: value`.
+
+Após substituir `Code.gs`, publique uma **nova versão** da implantação do aplicativo da Web.
+
+
+## Versão 1.1.2 — Loader e teste por duplo clique
+
+- `dados/bootstrap.js` centraliza a base local.
+- `js/loader.js` escolhe entre Google Sheets, cache do navegador e contingência local.
+- Em execução `file://`, a API é consultada por JSONP.
+- O Apps Script precisa ser republicado após a inclusão do suporte ao parâmetro `callback`.

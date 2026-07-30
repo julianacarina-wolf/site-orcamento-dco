@@ -1,39 +1,63 @@
 # Simulador de Orçamentos PRODEPA
 
-Projeto estático modular preparado para GitHub Pages.
+Versão **1.2.1 — estrutura reorganizada**.
+
+O projeto foi separado por responsabilidade para facilitar manutenção, publicação e futuras evoluções.
 
 ## Estrutura
 
-- `index.html`: interface principal.
-- `css/`: estilos de tela e impressão.
-- `js/`: módulos separados de infraestrutura, cálculos, tabelas, armazenamento e interface.
-- `dados/`: base gerada da planilha (`data.js` e `pricing.js`).
-- `planilhas/`: planilha oficial e correções emergenciais.
-- `scripts/`: conversor da planilha.
-- `.github/workflows/`: atualização automática e publicação.
+```text
+site-orcamento-dco/
+├── frontend/                 Site executado no navegador
+│   ├── index.html
+│   ├── css/
+│   ├── js/
+│   └── dados/
+├── apps-script/              API do Google Sheets
+│   ├── Code.gs
+│   ├── appsscript.json
+│   └── README.md
+├── planilhas/                Planilha-base e correções locais
+├── scripts/                  Conversor da planilha para bootstrap.js
+├── docs/                     Documentação técnica e atualização
+├── .github/workflows/        Publicação automática no GitHub Pages
+├── requirements.txt
+└── CHANGELOG.md
+```
 
-## Atualizar a base
+## Abrir por duplo clique
+
+1. Extraia o arquivo ZIP.
+2. Abra a pasta `frontend`.
+3. Dê duplo clique em `index.html`.
+
+A integração em `file://` usa JSONP e mantém a base local como contingência.
+
+## Atualizar somente o site
+
+Arquivos de interface, módulos e estilos ficam em `frontend/`.
+Alterações nessa pasta **não exigem nova implantação do Apps Script**.
+
+## Atualizar o Apps Script
+
+Somente é necessária nova implantação quando houver alteração em:
+
+- `apps-script/Code.gs`;
+- `apps-script/appsscript.json`;
+- endpoints ou formato da API.
+
+Consulte `docs/ATUALIZACAO.md` e `apps-script/README.md`.
+
+## Atualizar a planilha-base do repositório
 
 1. Substitua `planilhas/simulador-base.xlsx`.
-2. Faça o commit no GitHub.
-3. O workflow converte a planilha, atualiza `dados/` e publica o site.
+2. Faça commit e push.
+3. O workflow gera `frontend/dados/bootstrap.js` e publica o site.
 
-Para uma correção pontual de última milha, edite `planilhas/overrides.json`.
+## GitHub Pages
 
-## Publicar
+Em **Settings → Pages**, selecione **GitHub Actions**. O workflow publica apenas o conteúdo de `frontend/`, mantendo a URL do site sem `/frontend`.
 
-Em **Settings → Pages**, selecione **GitHub Actions**. Depois faça um commit ou execute manualmente o workflow na aba **Actions**.
+## Armazenamento dos orçamentos
 
-## Integração com Google Sheets
-
-Esta versão inclui o Módulo 1 de integração com a planilha mestre por Google Apps Script.
-
-Publicação e configuração:
-
-1. consulte `apps-script/README.md`;
-2. publique o Apps Script;
-3. copie a URL `/exec`;
-4. informe-a em `js/google-sheets-config.js`;
-5. publique o projeto no GitHub Pages.
-
-O sistema mantém os arquivos estáticos como contingência e utiliza cache local quando a API estiver temporariamente indisponível.
+Os orçamentos são gravados no `localStorage` do navegador. Eles permanecem no mesmo navegador e computador, mas não são compartilhados entre dispositivos.
