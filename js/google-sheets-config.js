@@ -1,6 +1,6 @@
 window.GOOGLE_SHEETS_CONFIG = {
   // URL do aplicativo da Web publicado no Google Apps Script.
-  apiUrl: 'https://script.google.com/macros/s/AKfycbw-xlbfu9orgxsk50dAv5ADM0UdKDiDUQm2ZYnPYITRdBMYLpzJ7O1ehrncVYJ1_c9jgQ/exec',
+  apiUrl: 'https://script.google.com/macros/s/AKfycbwt_fgHT2k5BigWuUG4JxOqfnoqRLgsno4CLpCDcaeaef2z6FuwBWPKv19tgM1O7hZS9A/exec',
 
   // Opcional. Preencha somente se a propriedade API_KEY também tiver sido criada no Apps Script.
   apiKey: '',
